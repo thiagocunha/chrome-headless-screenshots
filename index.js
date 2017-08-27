@@ -6,8 +6,8 @@ const timeout = require('delay');
 // CLI Args
 const url = argv.url || 'https://www.google.com';
 const format = argv.format === 'jpeg' ? 'jpeg' : 'png';
-const viewportWidth = argv.viewportWidth || 1440;
-let viewportHeight = argv.viewportHeight || 900;
+const viewportWidth = argv.viewportWidth || 1200;
+let viewportHeight = argv.viewportHeight || 1200;
 const delay = argv.delay || 0;
 const userAgent = argv.userAgent;
 const fullPage = argv.full;
@@ -30,12 +30,13 @@ async function init() {
     }
 
     // Extract used DevTools domains.
-    const {DOM, Emulation, Network, Page, Runtime} = client;
+    const {DOM, Emulation, Network, Page, Runtime, Console} = client;
 
     // Enable events on domains we are interested in.
     await Page.enable();
     await DOM.enable();
     await Network.enable();
+    await Console.enable();
 
     // If user agent override was specified, pass to Network domain
     if (userAgent) {
@@ -58,7 +59,12 @@ async function init() {
 
     // Navigate to target page
     await Page.navigate({url});
-
+    
+    // Get browser console log 
+    Console.messageAdded((result) => {
+      console.log(result);
+    });
+    
     // Wait for page load event to take screenshot
     await Page.loadEventFired();
 
